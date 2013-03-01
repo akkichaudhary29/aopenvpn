@@ -72,7 +72,7 @@ public class OpenVpnService extends VpnService {
 
 			config.add("--management");
 			config.add(managementPath.getAbsolutePath());
-			config.add("unix");
+			config.add("unixseq");
 			// config.add("localhost");
 //			config.add("1193");
 			config.add("--management-query-passwords");
@@ -204,24 +204,27 @@ public class OpenVpnService extends VpnService {
 					config.add(s);
 			
 			// config.add(" > /sdcard/openvpn/log.txt");
+			
+			String[] ss = config.toArray(new String[0]);
+			StringBuilder sb = new StringBuilder();
+			for (String s : ss) {
+				sb.append(s);
+				sb.append(" ");
+			}
+			Log.i(TAG, sb.toString());
 
 			File file = new File("/dev/tun");
 			Log.i(TAG, "w: " + file.canWrite());
 //			try {
 //				FileWriter fw = new FileWriter(new File("/dev/tun"));
-//				String[] ss = config.toArray(new String[0]);
+//				
 //				// StringBuilder sb = new StringBuilder();
-//				for (String s: ss) {
-////				sb.append(s);
-////				sb.append(" ");
-//					fw.write(s);
-//				}
 //				fw.close();
 //			} catch (Exception e) {
 //				// TODO Auto-generated catch block
 //				Log.e(TAG, e.getMessage());
 //			}
-			// Log.i(TAG, sb.toString());
+			
 			
 			return config.toArray(new String[0]);
 		}
