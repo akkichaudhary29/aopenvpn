@@ -114,7 +114,7 @@ JNIEXPORT jint JNICALL Java_info_kghost_android_openvpn_ManagementSocket_open
   struct sockaddr_un sa;
   const char *socketFile = (*env)->GetStringUTFChars(env, file, NULL);
   socklen_t salen = sockaddr_init(socketFile, &sa);
-  int s = socket(PF_UNIX, SOCK_SEQPACKET, 0);
+  int s = socket(PF_UNIX, SOCK_STREAM/*SOCK_SEQPACKET*/, 0);
   if (s < 0) {
     throwError(env, "java/lang/RuntimeException", strerror(errno));
     goto ERROR0;
