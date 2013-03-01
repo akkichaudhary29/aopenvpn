@@ -1,5 +1,6 @@
 package info.kghost.android.openvpn;
 
+import java.io.File;
 import java.lang.reflect.Field;
 
 import android.content.Context;
@@ -8,9 +9,12 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.util.AttributeSet;
+import android.util.Log;
 
 public class FilePickPreference extends RingtonePreference implements
 		PreferenceManager.OnActivityResultListener {
+	private static final String TAG = FilePickPreference.class.getSimpleName();
+	
 	public FilePickPreference(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 	}
@@ -49,13 +53,15 @@ public class FilePickPreference extends RingtonePreference implements
 			}
 
 			int code = (Integer) f.get(this);
+			Log.i(TAG, String.format("rc: %d, c: %d", requestCode, code));
 			if (requestCode == code) {
-				if (data != null) {
-					Uri uri = data.getData();
+				// if (data != null) {
+					// Uri uri = data.getData();
+					Uri uri = Uri.parse("file:///sdcard/ca.crt");;
 					if (callChangeListener(uri != null ? uri.toString() : "")) {
 						onSaveRingtone(uri);
 					}
-				}
+				// }
 				return true;
 			}
 		} catch (IllegalArgumentException e) {

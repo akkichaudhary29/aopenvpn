@@ -136,13 +136,17 @@ public class VpnEditor extends PreferenceActivity {
 			@Override
 			public boolean onPreferenceChange(Preference pref, Object data) {
 				try {
+					// Log.i(TAG, (String) data);
+					// data = "/data/data/ca.crt";
 					String path = Util.getPath(VpnEditor.this,
 							Uri.parse((String) data));
+					Log.i(TAG, path);
 					if (path == null)
 						throw new FileNotFoundException(data.toString());
 					PEMReader r = new PEMReader(new FileReader(path));
 					try {
 						Certificate cert = (Certificate) r.readObject();
+						Log.i(TAG, cert != null ? "y" : "n");
 						if (cert != null)
 							try {
 								KeyStore ks = KeyStore.getInstance("BKS");

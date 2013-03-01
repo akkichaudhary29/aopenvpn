@@ -576,8 +576,10 @@ public class VpnSettings extends PreferenceActivity {
 		mConnectingPassword = password;
 
 		if (intent != null) {
+			Log.i(TAG, "intent");
 			startActivityForResult(intent, REQUEST_CONNECT);
 		} else {
+			Log.i(TAG, "no intent");
 			onActivityResult(REQUEST_CONNECT, RESULT_OK, null);
 		}
 	}
