@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -44,6 +45,8 @@ import android.util.Base64;
 import android.util.Log;
 
 public class OpenVpnService extends VpnService {
+	private static final String TAG = OpenVpnService.class.getSimpleName();
+	
 	class Task extends AsyncTask<Object, VpnStatus.VpnState, String> {
 		private Process process;
 		private ManagementSocket sock;
@@ -69,7 +72,9 @@ public class OpenVpnService extends VpnService {
 
 			config.add("--management");
 			config.add(managementPath.getAbsolutePath());
-			config.add("unixseq");
+			config.add("unix");
+			// config.add("localhost");
+//			config.add("1193");
 			config.add("--management-query-passwords");
 			config.add("--management-hold");
 			config.add("--management-signal");
@@ -81,7 +86,8 @@ public class OpenVpnService extends VpnService {
 			config.add("3");
 
 			config.add("--dev");
-			config.add("[[ANDROID]]");
+			config.add("tun");
+			
 			config.add("--dev-type");
 			config.add("tun");
 
@@ -185,12 +191,38 @@ public class OpenVpnService extends VpnService {
 				if (!"None".equals(profile.getTlsAuthKeyDirection()))
 					config.add(profile.getTlsAuthKeyDirection());
 			}
+			
+			config.add("--ca");
+			config.add("/sdcard/openvpn/ca.crt");
+			
+			config.add("--auth-user-pass");
+			config.add("/sdcard/openvpn/passwd");
 
 			if (profile.getExtra() != null)
 				for (String s : profile.getExtra().trim()
 						.split(" +(?=([^\"]*\"[^\"]*\")*[^\"]*$)"))
 					config.add(s);
+			
+			// config.add(" > /sdcard/openvpn/log.txt");
 
+			File file = new File("/dev/tun");
+			Log.i(TAG, "w: " + file.canWrite());
+//			try {
+//				FileWriter fw = new FileWriter(new File("/dev/tun"));
+//				String[] ss = config.toArray(new String[0]);
+//				// StringBuilder sb = new StringBuilder();
+//				for (String s: ss) {
+////				sb.append(s);
+////				sb.append(" ");
+//					fw.write(s);
+//				}
+//				fw.close();
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				Log.e(TAG, e.getMessage());
+//			}
+			// Log.i(TAG, sb.toString());
+			
 			return config.toArray(new String[0]);
 		}
 
@@ -239,6 +271,7 @@ public class OpenVpnService extends VpnService {
 
 		private void doCommands() throws CharacterCodingException,
 				UnknownHostException {
+			// Log.i(TAG, "doCommands");
 			ByteBuffer buffer = ByteBuffer.allocateDirect(2000);
 			VpnService.Builder builder = null;
 			while (true) {
@@ -248,9 +281,11 @@ public class OpenVpnService extends VpnService {
 					int read = sock.read(buffer, fd);
 					if (read <= 0)
 						break;
+					Log.i(TAG, "_____________________________");
 					String lines[] = bb_to_str(buffer).split("\\r?\\n");
 					for (int i = 0; i < lines.length; ++i) {
 						String cmd = lines[i];
+						Log.d(TAG, cmd);
 						if (cmd.startsWith(">LOG:")) {
 							log.add(cmd.substring(">LOG:".length()));
 							Log.i(getClass().getName(), cmd);
@@ -288,6 +323,7 @@ public class OpenVpnService extends VpnService {
 							}
 						} else if (cmd
 								.equals(">NEED-TUN:Need 'TUN' confirmation")) {
+							Log.d(TAG, "tun");
 							FileDescriptorHolder tun = new FileDescriptorHolder(
 									builder.establish().detachFd());
 							sock.write(str_to_bb("tun TUN ok\n"), tun);
@@ -343,18 +379,23 @@ public class OpenVpnService extends VpnService {
 
 		@Override
 		protected String doInBackground(Object... params) {
+			Log.i(TAG, "doInBackground");
+			
 			publishProgress(VpnState.PREPARING);
 
 			try {
 				process = Runtime.getRuntime().exec(prepare(profile));
+				Log.i(TAG, managementPath.getAbsolutePath());
 				for (int i = 0; i < 30 && isProcessAlive(process)
 						&& sock == null; ++i)
 					try { // Wait openvpn to create management socket
 						sock = new ManagementSocket(managementPath);
 					} catch (Exception e) {
+						Log.e(TAG, e.getMessage());
 						Thread.sleep(1000);
 					}
 				if (sock == null) {
+					Log.e(TAG, "sock");
 					InputStream stdout = process.getInputStream();
 					byte[] buffer = new byte[stdout.available()];
 					stdout.read(buffer);
