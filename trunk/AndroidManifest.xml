@@ -1,17 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="info.kghost.android.openvpn"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    android:installLocation="preferExternal" >
 
-    <uses-sdk
-        android:minSdkVersion="14"
-        android:targetSdkVersion="17" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+
+    <uses-sdk android:minSdkVersion="15" />
 
     <application
-        android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/app"
-        android:theme="@style/AppTheme" >
+        android:icon="@drawable/openvpn_icon"
+        android:label="@string/app" >
+        <activity
+            android:name="info.kghost.android.openvpn.VpnSettings"
+            android:configChanges="orientation|keyboardHidden" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="info.kghost.android.openvpn.VpnEditor"
+            android:configChanges="orientation|keyboardHidden" />
+        <activity
+            android:name="info.kghost.android.openvpn.AdvancedSettings"
+            android:configChanges="orientation|keyboardHidden" />
+
+        <service
+            android:name="info.kghost.android.openvpn.OpenVpnService"
+            android:permission="android.permission.BIND_VPN_SERVICE" >
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
